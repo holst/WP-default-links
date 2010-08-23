@@ -1,6 +1,6 @@
 <?php
 /*
-Plugin Name: WP Default Link
+Plugin Name: WP Default Links
 Plugin URI: http://superninja.dk/projects/wp-default-link/
 Description: Markdown (and, presumably, other tools like it) offers to opportunity to make links in a slightly less obtrusive way than the standard HTML `a` element. Links can also be made with a list at the end of the post, by using [Link title][], the link being defined with [Link title]: http://example.com/. This plugin makes the last bit optional, by allowing the creation of a link database for often used URIs.
 Version: 0.1
