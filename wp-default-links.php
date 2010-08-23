@@ -19,11 +19,6 @@ License: Public domain
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 */
 
-/*  TODO:
-    * Allow for editing and deletion of links
-    * Redirect after POSTs
-*/
-
 $_DB_VERSION = 0.1;
 
 function default_links_install() {
