@@ -35,8 +35,8 @@ function default_links_install() {
         $sql = array('CREATE TABLE ' . $table . ' (
         	id mediumint(9) NOT NULL AUTO_INCREMENT PRIMARY KEY,
         	name VARCHAR(250) NOT NULL UNIQUE KEY,
-        	url VARCHAR(250) NOT NULL,
-        	optional_title VARCHAR (250) NOT NULL
+        	uri VARCHAR(250) NOT NULL,
+        	tooltip VARCHAR (250) NOT NULL
         )');
         
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
@@ -59,19 +59,19 @@ function default_links($text) {
     return $text;
 }
 
-function get_link_by_id($id) {
+function get_link_by_name($name) {
     global $wpdb;
     
     $sql = sprintf('SELECT
-            url,
-            optional_title as title
+            uri,
+            tooltip
         FROM
             %sdefault_links
         WHERE
             name = "%s"
         LIMIT 1',
         $wpdb->prefix,
-        $id
+        $name
     );
     
     $result = $wpdb->get_row($sql);
@@ -82,17 +82,17 @@ function get_link_by_id($id) {
 function _doAnchors_reference_callback($matches) {
 	$whole_match =  $matches[1];
 	$link_text   =  $matches[2];
-	$link_id     =  $matches[3] ? $matches[3] : $link_text;
+	$link_name   =  $matches[3] ? $matches[3] : $link_text;
 	
 	# lower-case and turn embedded newlines into spaces
-	$link_id = strtolower($link_id);
-	$link_id = preg_replace('/\ ?\n/', ' ', $link_id);
+	$link_name = strtolower($link_name);
+	$link_name = preg_replace('/\ ?\n/', ' ', $link_name);
 
-	if($link = get_link_by_id($link_id)) {
-		$result = '<a href="'.$link->url.'"';
-		if (isset($link->title)) {
-			$title = $link->title;
-			$result .=  ' title="'.$title.'"';
+	if($link = get_link_by_name($link_name)) {
+		$result = '<a href="'.$link->uri.'"';
+		
+		if (isset($link->tooltip)) {
+			$result .=  ' title="'.$link->tooltip.'"';
 		}
 	    
 		$result .= '>'.$link_text.'</a>';
@@ -122,9 +122,8 @@ function wp_default_links_options() {
     
     if(isset($_POST['name'], $_POST['uri']) && $_POST['name'] && $_POST['uri']
     ) {
-        $data = array('name' => $_POST['name'], 'url' => $_POST['uri'], 
-            'optional_title' => 
-                isset($_POST['tooltip']) ? $_POST['tooltip'] : '');
+        $data = array('name' => $_POST['name'], 'uri' => $_POST['uri'], 
+            'tooltip' => isset($_POST['tooltip']) ? $_POST['tooltip'] : '');
         
         if(!isset($_POST['id'])) {
             $wpdb->insert($wpdb->prefix.'default_links', $data);
@@ -146,8 +145,8 @@ function wp_default_links_options() {
     if(isset($_GET['edit'])) {
         $sql = $wpdb->prepare('SELECT
             name,
-            url,
-            optional_title
+            uri,
+            tooltip
         FROM
             '.$wpdb->prefix.'default_links
         WHERE
@@ -169,9 +168,9 @@ function wp_default_links_options() {
     }
     
     echo '<form method="post" action="">';
-    echo '<div><label for="name">ID: <input type="text" name="name" value="'.(isset($row) ? $row->name : '').'" id="name"></label></div>';
-    echo '<div><label for="uri">URI: <input type="text" name="uri" value="'.(isset($row) ? $row->url : 'http://').'" id="uri"></label></div>';
-    echo '<div><label for="tooltip">Tooltip (optional): <input type="text" name="tooltip" value="'.(isset($row) ? $row->optional_title : '').'" id="tooltip"></label></div>';
+    echo '<div><label for="name">Name: <input type="text" name="name" value="'.(isset($row) ? $row->name : '').'" id="name"></label></div>';
+    echo '<div><label for="uri">URI: <input type="text" name="uri" value="'.(isset($row) ? $row->uri : 'http://').'" id="uri"></label></div>';
+    echo '<div><label for="tooltip">Tooltip (optional): <input type="text" name="tooltip" value="'.(isset($row) ? $row->tooltip : '').'" id="tooltip"></label></div>';
     echo '<div><input type="submit" value="'.(isset($row) ? 'Edit' : 'Add link').'">'.(isset($row) ? '<input type="hidden" name="id" value="'.$_GET['edit'].'" id="id">' : '').'</div>';
     echo '</form>';
     echo '<hr />';
@@ -179,8 +178,8 @@ function wp_default_links_options() {
     $sql = 'SELECT
         id,
         name,
-        url,
-        optional_title
+        uri,
+        tooltip
     FROM
         '.$wpdb->prefix.'default_links';
     
@@ -190,15 +189,15 @@ function wp_default_links_options() {
         echo '<h3>List of current links</h3>';
     
         echo '<table>';
-        echo '<thead><tr><th>ID</th><th>URI</th><th>Title</th></tr></thead>';
+        echo '<thead><tr><th>Name</th><th>URI</th><th>Tooltip</th></tr></thead>';
         
         echo '<tbody>';
         
         foreach($objects as $row) {
             echo '<tr>';
             echo '<td>'.$row->name.'</td>';
-            echo '<td>'.$row->url.'</td>';
-            echo '<td>'.$row->optional_title.'</td>';
+            echo '<td>'.$row->uri.'</td>';
+            echo '<td>'.$row->tooltip.'</td>';
             echo '<td><a href="'.admin_url('link-manager.php?page=wp-default-link&amp;edit='.$row->id).'">Edit</a>. <a href="'.admin_url('link-manager.php?page=wp-default-link&amp;delete='.$row->id).'">Delete</a>.</td>';
             echo '</tr>';
         }
